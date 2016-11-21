@@ -2,6 +2,7 @@ package avro
 
 import (
 	"bytes"
+	"crypto/rand"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -210,7 +211,12 @@ type DataFileWriter struct {
 func NewDataFileWriter(output io.Writer, schema Schema, datumWriter DatumWriter) (writer *DataFileWriter, err error) {
 	encoder := NewBinaryEncoder(output)
 	datumWriter.SetSchema(schema)
-	sync := []byte("1234567890abcdef") // TODO come up with other sync value
+
+	// Generate a random sync marker
+	sync := make([]byte, 16)
+	if _, err = rand.Read(sync); err != nil {
+		return
+	}
 
 	header := &objFileHeader{
 		Magic: magic,
